@@ -28,17 +28,21 @@ npm run preview
 
 ## Deployment
 
-Every push to `develop` deploys the app to GitHub Pages via [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
+Every push to `develop` builds the app and publishes it to the `gh-pages` branch via [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
 
-After the first successful deploy, enable Pages in the repo settings:
+### One-time setup
 
-1. Go to **Settings → Pages**
-2. Under **Build and deployment**, set **Source** to **GitHub Actions**
+1. Go to **Settings → Pages** in the repo
+2. Set **Source** to **Deploy from a branch**
+3. Choose branch `gh-pages` and folder `/(root)`
+4. Save and wait about a minute
 
-The live URL will be:
+### Live URL
 
 ```
-https://<your-github-username>.github.io/<repo-name>/
+https://nikomax.github.io/cursor-test/
 ```
+
+**Important:** `https://nikomax.github.io/` is a different project (Films). This app is only available at the `/cursor-test/` path above.
 
 This template uses Vue 3 `<script setup>` SFCs. Learn more about [Vue 3](https://vuejs.org/) and [TypeScript setup](https://vuejs.org/guide/typescript/overview.html#project-setup).
