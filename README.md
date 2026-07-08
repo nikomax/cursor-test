@@ -46,3 +46,11 @@ https://nikomax.github.io/cursor-test/
 **Important:** `https://nikomax.github.io/` is a different project (Films). This app is only available at the `/cursor-test/` path above.
 
 This template uses Vue 3 `<script setup>` SFCs. Learn more about [Vue 3](https://vuejs.org/) and [TypeScript setup](https://vuejs.org/guide/typescript/overview.html#project-setup).
+
+## Superpowers
+
+This project includes [Superpowers](https://github.com/obra/superpowers) agent skills in `.cursor/skills/` (v6.1.1). They provide structured workflows for brainstorming, planning, TDD, debugging, and code review.
+
+Skills are loaded automatically by Cursor Agent. You can also invoke them with `/` in chat (e.g. `/brainstorming`, `/test-driven-development`).
+
+To install or update Superpowers globally in Cursor IDE, run `/add-plugin superpowers` in Agent chat.
