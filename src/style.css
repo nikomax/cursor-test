@@ -157,6 +157,13 @@ code {
 }
 
 #app {
+  position: relative;
+  min-height: 100svh;
+}
+
+.app-content {
+  position: relative;
+  z-index: 1;
   width: 1126px;
   max-width: 100%;
   margin: 0 auto;
@@ -166,6 +173,8 @@ code {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(2px);
 }
 
 #center {
