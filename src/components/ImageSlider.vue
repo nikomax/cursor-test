@@ -36,10 +36,12 @@ const slides: Slide[] = [
   },
 ]
 
-const COLS = 14
-const ROWS = 8
-const BREAK_DURATION = 0.55
-const JOIN_DURATION = 0.65
+const COLS = 40
+const ROWS = 23
+const BREAK_DURATION = 0.75
+const JOIN_DURATION = 0.85
+const PIECE_OVERLAP = 1.006
+const UV_BLEED = 0.35
 
 type TransitionPhase = 'idle' | 'breaking' | 'joining'
 
@@ -49,6 +51,7 @@ interface Piece {
   homeRotation: THREE.Euler
   scatterPosition: THREE.Vector3
   scatterRotation: THREE.Euler
+  stagger: number
 }
 
 const containerRef = ref<HTMLDivElement | null>(null)
@@ -70,16 +73,22 @@ let transitionProgress = 0
 let transitionStart = 0
 let pendingIndex: number | null = null
 
-function easeInOutCubic(t: number): number {
-  return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2
+function easeOutBack(t: number): number {
+  const c1 = 1.70158
+  const c3 = c1 + 1
+  return 1 + c3 * (t - 1) ** 3 + c1 * (t - 1) ** 2
 }
 
-function easeOutCubic(t: number): number {
-  return 1 - (1 - t) ** 3
+function easeInBack(t: number): number {
+  const c1 = 1.70158
+  const c3 = c1 + 1
+  return c3 * t ** 3 - c1 * t ** 2
 }
 
-function easeInCubic(t: number): number {
-  return t * t * t
+function staggeredProgress(progress: number, stagger: number): number {
+  const start = stagger * 0.45
+  if (progress <= start) return 0
+  return Math.min((progress - start) / (1 - start), 1)
 }
 
 function getGridDimensions(aspect: number) {
@@ -88,16 +97,35 @@ function getGridDimensions(aspect: number) {
   return { width, height, cellW: width / COLS, cellH: height / ROWS }
 }
 
+function configureTileTexture(map: THREE.Texture, col: number, row: number) {
+  const bleedX = UV_BLEED / textureSize(map, 'x')
+  const bleedY = UV_BLEED / textureSize(map, 'y')
+  const tileW = 1 / COLS
+  const tileH = 1 / ROWS
+
+  map.wrapS = THREE.ClampToEdgeWrapping
+  map.wrapT = THREE.ClampToEdgeWrapping
+  map.minFilter = THREE.LinearFilter
+  map.magFilter = THREE.LinearFilter
+  map.repeat.set(tileW + bleedX * 2, tileH + bleedY * 2)
+  map.offset.set(col * tileW - bleedX, 1 - (row + 1) * tileH - bleedY)
+  map.needsUpdate = true
+}
+
+function textureSize(texture: THREE.Texture, axis: 'x' | 'y'): number {
+  const image = texture.image as { width?: number; height?: number } | undefined
+  return axis === 'x' ? image?.width ?? 1400 : image?.height ?? 900
+}
+
 function createPieceMaterial(texture: THREE.Texture, col: number, row: number) {
   const map = texture.clone()
-  map.repeat.set(1 / COLS, 1 / ROWS)
-  map.offset.set(col / COLS, 1 - (row + 1) / ROWS)
-  map.needsUpdate = true
+  configureTileTexture(map, col, row)
 
   return new THREE.MeshBasicMaterial({
     map,
-    side: THREE.DoubleSide,
-    transparent: true,
+    side: THREE.FrontSide,
+    depthWrite: true,
+    depthTest: true,
   })
 }
 
@@ -107,9 +135,13 @@ function buildPieces(texture: THREE.Texture, aspect: number): Piece[] {
   const { width, height, cellW, cellH } = getGridDimensions(aspect)
   const result: Piece[] = []
 
+  const centerX = 0
+  const centerY = 0
+  const maxDist = Math.hypot(width / 2, height / 2)
+
   for (let row = 0; row < ROWS; row++) {
     for (let col = 0; col < COLS; col++) {
-      const geometry = new THREE.PlaneGeometry(cellW * 0.98, cellH * 0.98)
+      const geometry = new THREE.PlaneGeometry(cellW * PIECE_OVERLAP, cellH * PIECE_OVERLAP)
       const material = createPieceMaterial(texture, col, row)
       const mesh = new THREE.Mesh(geometry, material)
 
@@ -117,15 +149,18 @@ function buildPieces(texture: THREE.Texture, aspect: number): Piece[] {
       const y = height / 2 - cellH / 2 - row * cellH
       mesh.position.set(x, y, 0)
 
+      const dist = Math.hypot(x - centerX, y - centerY) / maxDist
+      const stagger = dist * 0.85 + (col % 3) * 0.04
+
       const scatterPosition = new THREE.Vector3(
-        x + (Math.random() - 0.5) * width * 1.4,
-        y + (Math.random() - 0.5) * height * 1.4,
-        (Math.random() - 0.5) * 6 + (Math.random() > 0.5 ? 2 : -2),
+        x + (Math.random() - 0.5) * width * 1.2,
+        y + (Math.random() - 0.5) * height * 1.2,
+        (Math.random() - 0.5) * 5 + (Math.random() > 0.5 ? 1.8 : -1.8),
       )
       const scatterRotation = new THREE.Euler(
-        (Math.random() - 0.5) * Math.PI * 1.2,
-        (Math.random() - 0.5) * Math.PI * 1.2,
-        (Math.random() - 0.5) * Math.PI * 0.8,
+        (Math.random() - 0.5) * Math.PI * 1.1,
+        (Math.random() - 0.5) * Math.PI * 1.1,
+        (Math.random() - 0.5) * Math.PI * 0.7,
       )
 
       scene.add(mesh)
@@ -135,6 +170,7 @@ function buildPieces(texture: THREE.Texture, aspect: number): Piece[] {
         homeRotation: mesh.rotation.clone(),
         scatterPosition,
         scatterRotation,
+        stagger,
       })
     }
   }
@@ -161,9 +197,7 @@ function updatePieceMaterials(texture: THREE.Texture) {
       const material = piece.mesh.material as THREE.MeshBasicMaterial
       material.map?.dispose()
       const map = texture.clone()
-      map.repeat.set(1 / COLS, 1 / ROWS)
-      map.offset.set(col / COLS, 1 - (row + 1) / ROWS)
-      map.needsUpdate = true
+      configureTileTexture(map, col, row)
       material.map = map
       material.needsUpdate = true
     }
@@ -186,9 +220,16 @@ function refreshScatterTargets(aspect: number) {
   }
 }
 
-function applyPieceState(from: 'home' | 'scatter', to: 'home' | 'scatter', t: number) {
-  const eased = easeInOutCubic(t)
+function applyPieceState(
+  from: 'home' | 'scatter',
+  to: 'home' | 'scatter',
+  progress: number,
+  ease: (t: number) => number,
+) {
   for (const piece of pieces) {
+    const localT = staggeredProgress(progress, piece.stagger)
+    const eased = ease(localT)
+
     const fromPos = from === 'home' ? piece.homePosition : piece.scatterPosition
     const toPos = to === 'home' ? piece.homePosition : piece.scatterPosition
     const fromRot = from === 'home' ? piece.homeRotation : piece.scatterRotation
@@ -253,6 +294,10 @@ onMounted(async () => {
             slide.image,
             (texture) => {
               texture.colorSpace = THREE.SRGBColorSpace
+              texture.minFilter = THREE.LinearFilter
+              texture.magFilter = THREE.LinearFilter
+              texture.wrapS = THREE.ClampToEdgeWrapping
+              texture.wrapT = THREE.ClampToEdgeWrapping
               resolve(texture)
             },
             undefined,
@@ -291,7 +336,7 @@ onMounted(async () => {
       transitionProgress = Math.min((now - transitionStart) / duration, 1)
 
       if (transitionPhase === 'breaking') {
-        applyPieceState('home', 'scatter', easeOutCubic(transitionProgress))
+        applyPieceState('home', 'scatter', transitionProgress, easeInBack)
         if (transitionProgress >= 1 && pendingIndex !== null) {
           currentIndex.value = pendingIndex
           updatePieceMaterials(textures[pendingIndex])
@@ -300,7 +345,7 @@ onMounted(async () => {
           transitionStart = now
         }
       } else if (transitionPhase === 'joining') {
-        applyPieceState('scatter', 'home', easeInCubic(transitionProgress))
+        applyPieceState('scatter', 'home', transitionProgress, easeOutBack)
         if (transitionProgress >= 1) {
           transitionPhase = 'idle'
           pendingIndex = null
