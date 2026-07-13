@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-import ThreeBackground from './components/ThreeBackground.vue'
+import HeroSection from './components/HeroSection.vue'
+import ImageSlider from './components/ImageSlider.vue'
+import FeaturesSection from './components/FeaturesSection.vue'
+import FooterSection from './components/FooterSection.vue'
 </script>
 
 <template>
-  <ThreeBackground />
-  <main class="app-content">
-    <HelloWorld />
-  </main>
+  <div class="landing">
+    <HeroSection />
+    <div id="gallery">
+      <ImageSlider />
+    </div>
+    <FeaturesSection />
+    <FooterSection />
+  </div>
 </template>
