@@ -401,9 +401,9 @@ onUnmounted(() => {
   <section class="slider-section" aria-label="Image gallery">
     <div class="slider-header">
       <p class="slider-eyebrow">Gallery</p>
-      <h2 class="slider-title">Explore the world</h2>
+      <h2 class="slider-title">Frames that shatter</h2>
       <p class="slider-subtitle">
-        Each slide shatters into fragments and reassembles into the next scene.
+        Nine-hundred fragments. One click. A new horizon.
       </p>
     </div>
 
@@ -466,7 +466,7 @@ onUnmounted(() => {
 
 <style scoped>
 .slider-section {
-  padding: 80px 24px 100px;
+  padding: 100px 24px 110px;
 }
 
 .slider-header {
@@ -476,24 +476,26 @@ onUnmounted(() => {
 }
 
 .slider-eyebrow {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--accent);
-  margin: 0 0 12px;
+  margin: 0 0 14px;
 }
 
 .slider-title {
-  font-size: clamp(32px, 5vw, 48px);
+  font-family: var(--display);
+  font-size: clamp(36px, 6vw, 56px);
   letter-spacing: -0.03em;
   margin: 0 0 16px;
   color: var(--text-h);
 }
 
 .slider-subtitle {
-  font-size: 18px;
-  line-height: 1.6;
+  font-family: var(--serif);
+  font-size: 19px;
+  line-height: 1.55;
   color: var(--text);
   margin: 0;
 }
@@ -502,10 +504,10 @@ onUnmounted(() => {
   position: relative;
   max-width: 1100px;
   margin: 0 auto;
-  border-radius: 20px;
+  border-radius: 4px;
   overflow: hidden;
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: #06100e;
   box-shadow: var(--shadow-lg);
 }
 
@@ -554,8 +556,9 @@ onUnmounted(() => {
 }
 
 .slide-title {
+  font-family: var(--display);
   font-size: 28px;
-  font-weight: 500;
+  font-weight: 600;
   color: #fff;
   margin: 0 0 4px;
   letter-spacing: -0.02em;
@@ -596,8 +599,9 @@ onUnmounted(() => {
 }
 
 .nav-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.45);
+  background: rgba(214, 255, 75, 0.15);
+  border-color: rgba(214, 255, 75, 0.55);
+  color: #d6ff4b;
   transform: scale(1.05);
 }
 
@@ -623,7 +627,7 @@ onUnmounted(() => {
 }
 
 .dot.active {
-  background: #fff;
+  background: #d6ff4b;
   transform: scale(1.2);
 }
 

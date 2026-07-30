@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import HeroSection from './components/HeroSection.vue'
+import LiquidHero from './components/LiquidHero.vue'
 import ImageSlider from './components/ImageSlider.vue'
-import FeaturesSection from './components/FeaturesSection.vue'
+import CraftSection from './components/CraftSection.vue'
 import FooterSection from './components/FooterSection.vue'
+import MagneticCursor from './components/MagneticCursor.vue'
 </script>
 
 <template>
+  <MagneticCursor />
   <div class="landing">
-    <HeroSection />
+    <LiquidHero />
     <div id="gallery">
       <ImageSlider />
     </div>
-    <FeaturesSection />
+    <CraftSection />
     <FooterSection />
   </div>
 </template>
